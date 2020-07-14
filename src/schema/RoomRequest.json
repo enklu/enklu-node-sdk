@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "RoomRequest",
+  "definitions": {
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/RoomEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "requestId": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  ]
+}

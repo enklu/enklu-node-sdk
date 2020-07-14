@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "NotificationEvent",
+  "definitions": {
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/RoomEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "payload": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "memberId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    }
+  ]
+}

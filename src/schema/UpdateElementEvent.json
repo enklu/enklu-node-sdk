@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UpdateElementEvent",
+  "definitions": {
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/RoomEvent"
+    },
+    {
+      "type": "object",
+      "x-abstract": true,
+      "additionalProperties": false,
+      "properties": {
+        "elementHash": {
+          "type": "integer"
+        },
+        "propHash": {
+          "type": "integer"
+        }
+      }
+    }
+  ]
+}

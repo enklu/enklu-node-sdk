@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "SceneMapUpdateEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "propsAdded": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/Record"
+      }
+    },
+    "elementsAdded": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/Record"
+      }
+    }
+  },
+  "definitions": {
+    "Record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "hash": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,414 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "SceneDiffEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "map": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/ElementMap"
+        }
+      ]
+    },
+    "creates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/CreateElementEvent"
+      }
+    },
+    "vecUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementVec3Event"
+      }
+    },
+    "colUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementCol4Event"
+      }
+    },
+    "intUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementIntEvent"
+      }
+    },
+    "floatUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementFloatEvent"
+      }
+    },
+    "boolUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementBoolEvent"
+      }
+    },
+    "stringUpdates": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "$ref": "#/definitions/UpdateElementStringEvent"
+      }
+    }
+  },
+  "definitions": {
+    "ElementMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "elements": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Record"
+          }
+        },
+        "props": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/Record"
+          }
+        }
+      }
+    },
+    "Record": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "hash": {
+          "type": "integer"
+        }
+      }
+    },
+    "CreateElementEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "parentHash": {
+          "type": "integer"
+        },
+        "element": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ElementData"
+            }
+          ]
+        }
+      }
+    },
+    "ElementData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "children": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/ElementData"
+          }
+        },
+        "schema": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ElementSchemaData"
+            }
+          ]
+        }
+      }
+    },
+    "ElementSchemaData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strings": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ints": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "floats": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "bools": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "vectors": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/Vec3"
+          }
+        },
+        "colors": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/Col4"
+          }
+        }
+      }
+    },
+    "Vec3": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number",
+          "format": "float"
+        },
+        "y": {
+          "type": "number",
+          "format": "float"
+        },
+        "z": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitudeSqr": {
+          "type": "number",
+          "format": "float"
+        },
+        "normalized": {
+          "$ref": "#/definitions/Vec3"
+        }
+      }
+    },
+    "Col4": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "r": {
+          "type": "number",
+          "format": "float"
+        },
+        "g": {
+          "type": "number",
+          "format": "float"
+        },
+        "b": {
+          "type": "number",
+          "format": "float"
+        },
+        "a": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "UpdateElementVec3Event": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "$ref": "#/definitions/Vec3"
+            }
+          }
+        }
+      ]
+    },
+    "UpdateElementEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RoomEvent"
+        },
+        {
+          "type": "object",
+          "x-abstract": true,
+          "additionalProperties": false,
+          "properties": {
+            "elementHash": {
+              "type": "integer"
+            },
+            "propHash": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "UpdateElementCol4Event": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "$ref": "#/definitions/Col4"
+            }
+          }
+        }
+      ]
+    },
+    "UpdateElementIntEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        }
+      ]
+    },
+    "UpdateElementFloatEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        }
+      ]
+    },
+    "UpdateElementBoolEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "UpdateElementStringEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/UpdateElementEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

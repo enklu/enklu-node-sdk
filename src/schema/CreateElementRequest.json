@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "CreateElementRequest",
+  "definitions": {
+    "ElementExpirationType": {
+      "type": "integer",
+      "description": "",
+      "x-enumNames": [
+        "Session",
+        "Persistent"
+      ],
+      "enum": [
+        0,
+        1
+      ]
+    },
+    "ElementData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "type": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "children": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/ElementData"
+          }
+        },
+        "schema": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ElementSchemaData"
+            }
+          ]
+        }
+      }
+    },
+    "ElementSchemaData": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "strings": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "ints": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "floats": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "bools": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        },
+        "vectors": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/Vec3"
+          }
+        },
+        "colors": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/Col4"
+          }
+        }
+      }
+    },
+    "Vec3": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number",
+          "format": "float"
+        },
+        "y": {
+          "type": "number",
+          "format": "float"
+        },
+        "z": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitudeSqr": {
+          "type": "number",
+          "format": "float"
+        },
+        "normalized": {
+          "$ref": "#/definitions/Vec3"
+        }
+      }
+    },
+    "Col4": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "r": {
+          "type": "number",
+          "format": "float"
+        },
+        "g": {
+          "type": "number",
+          "format": "float"
+        },
+        "b": {
+          "type": "number",
+          "format": "float"
+        },
+        "a": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "RoomRequest": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RoomEvent"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "requestId": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        }
+      ]
+    },
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/RoomRequest"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expiration": {
+          "$ref": "#/definitions/ElementExpirationType"
+        },
+        "owner": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "parentHash": {
+          "type": "integer"
+        },
+        "element": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/ElementData"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

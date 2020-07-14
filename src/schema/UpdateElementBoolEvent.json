@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UpdateElementBoolEvent",
+  "definitions": {
+    "UpdateElementEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RoomEvent"
+        },
+        {
+          "type": "object",
+          "x-abstract": true,
+          "additionalProperties": false,
+          "properties": {
+            "elementHash": {
+              "type": "integer"
+            },
+            "propHash": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/UpdateElementEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "boolean"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "RoomResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "requestId": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "success": {
+      "type": "boolean"
+    }
+  }
+}

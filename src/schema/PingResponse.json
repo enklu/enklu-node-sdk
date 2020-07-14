@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "PingResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "pingId": {
+      "type": "integer",
+      "format": "byte"
+    }
+  }
+}

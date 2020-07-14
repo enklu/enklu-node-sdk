@@ -1,0 +1,17 @@
+{
+  "name": "enklu-node-sdk",
+  "version": "1.0.0",
+  "description": "Resources for interacting with the Enklu Cloud Web APIs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node -r dotenv/config index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Enklu, Inc.",
+  "license": "MIT",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}

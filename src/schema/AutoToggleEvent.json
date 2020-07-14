@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "AutoToggleEvent",
+  "definitions": {
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/RoomEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "elementHash": {
+          "type": "integer"
+        },
+        "propName": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "startingValue": {
+          "type": "boolean"
+        },
+        "milliseconds": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  ]
+}

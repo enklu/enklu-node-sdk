@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UpdateElementVec3Event",
+  "definitions": {
+    "Vec3": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number",
+          "format": "float"
+        },
+        "y": {
+          "type": "number",
+          "format": "float"
+        },
+        "z": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitude": {
+          "type": "number",
+          "format": "float"
+        },
+        "magnitudeSqr": {
+          "type": "number",
+          "format": "float"
+        },
+        "normalized": {
+          "$ref": "#/definitions/Vec3"
+        }
+      }
+    },
+    "UpdateElementEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RoomEvent"
+        },
+        {
+          "type": "object",
+          "x-abstract": true,
+          "additionalProperties": false,
+          "properties": {
+            "elementHash": {
+              "type": "integer"
+            },
+            "propHash": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/UpdateElementEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/Vec3"
+        }
+      }
+    }
+  ]
+}

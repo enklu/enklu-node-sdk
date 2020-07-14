@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "ElementExpirationType",
+  "type": "integer",
+  "description": "",
+  "x-enumNames": [
+    "Session",
+    "Persistent"
+  ],
+  "enum": [
+    0,
+    1
+  ]
+}

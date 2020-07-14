@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UpdateElementCol4Event",
+  "definitions": {
+    "Col4": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "r": {
+          "type": "number",
+          "format": "float"
+        },
+        "g": {
+          "type": "number",
+          "format": "float"
+        },
+        "b": {
+          "type": "number",
+          "format": "float"
+        },
+        "a": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "UpdateElementEvent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RoomEvent"
+        },
+        {
+          "type": "object",
+          "x-abstract": true,
+          "additionalProperties": false,
+          "properties": {
+            "elementHash": {
+              "type": "integer"
+            },
+            "propHash": {
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "RoomEvent": {
+      "type": "object",
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "$ref": "#/definitions/UpdateElementEvent"
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/Col4"
+        }
+      }
+    }
+  ]
+}
