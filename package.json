@@ -4,14 +4,14 @@
   "description": "Resources for interacting with the Enklu Cloud Web APIs",
   "main": "index.js",
   "scripts": {
-    "dev": "node -r dotenv/config index.js",
+    "dev": "nodemon -r dotenv/config index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Enklu, Inc.",
   "license": "MIT",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.4"
   }
 }
