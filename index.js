@@ -17,13 +17,17 @@ const LOGIN_BYTES = Buffer.concat(LOGIN_ARR);
 
 const sendMessage = (msg, data) => {
   setTimeout(() => {
-    const len = data.length;
-    console.log(`Sending ${msg} message of length ${len} bytes`);
-    const lenArr = new Uint8Array([len >> 8, len]);
-    const output = Buffer.concat([Buffer.from(lenArr), data]);
-    const success = client.write(output);
-    if (!success) {
-      console.error(`Error sending ${msg} message`);
+    try {
+      const len = data.length;
+      console.log(`Sending ${msg} message of length ${len} bytes`);
+      const lenArr = new Uint8Array([len >> 8, len]);
+      const output = Buffer.concat([Buffer.from(lenArr), data]);
+      const success = client.write(output);
+      if (!success) {
+        console.error(`Error sending ${msg} message`);
+      }
+    } catch (e) {
+      console.error(e)
     }
   }, 2000)
 };
@@ -36,8 +40,12 @@ client.connect(MYCELIUM_PORT, MYCELIUM_IP, () => {
 });
 
 client.on('data', (data) => {
-  event = mycelium.decode(data);
-  console.log(JSON.stringify(event, null, 2));
+  try {
+    event = mycelium.decode(data);
+    console.log(JSON.stringify(event, null, 2));
+  } catch(e) {
+    console.error(e);
+  }
 });
 
 client.on('close', () => {
