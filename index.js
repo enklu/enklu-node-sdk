@@ -37,7 +37,7 @@ client.connect(MYCELIUM_PORT, MYCELIUM_IP, () => {
 
 client.on('data', (data) => {
   event = mycelium.decode(data);
-  console.log(event);
+  console.log(JSON.stringify(event, null, 2));
 });
 
 client.on('close', () => {
