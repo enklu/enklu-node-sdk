@@ -37,7 +37,7 @@ const decodePayload = (schema, data, definitions) => {
   const properties = getAllProperties(schema, definitions) || {};
 
   let decoded = { data, payload: null };
-  let type = schema.type || '';
+  let type = schema.type || 'object';
 
   if (additionalProperties) {
     type = 'map';
