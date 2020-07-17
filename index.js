@@ -1,4 +1,3 @@
-const net = require('net');
 const mycelium = require('./src/mycelium');
 
 const MYCELIUM_IP = process.env.MYCELIUM_IP;
@@ -56,3 +55,6 @@ client.on('error', (err) => {
   console.error(err);
 });
 
+module.exports = {
+  ...mycelium
+};

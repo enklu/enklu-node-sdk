@@ -4,7 +4,7 @@
   "description": "Resources for interacting with the Enklu Cloud Web APIs",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon -r dotenv/config index.js",
+    "dev": "nodemon -r dotenv/config example.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Enklu, Inc.",

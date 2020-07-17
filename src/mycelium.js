@@ -1,211 +1,220 @@
+const { decode } = require('./decoder');
+const { validate, encode } = require('./encoder');
+const net = require('net');
+
+const MYCELIUM_IP = process.env.MYCELIUM_IP || 'cloud.enklu.com';
+const MYCELIUM_PORT = process.env.MYCELIUM_PORT || '10103';
+const EVENTS = ['MESSAGE', 'CONNECT', 'ERROR', 'CLOSE', 'DRAIN'];
+
 /**
  * Facilitates encoding and decoding of events from a Mycelium multiplayer server.
+ * @event message Invoked when a Mycelium message is received.
+ * @event connect Invoked when a TCP connection is established.
+ * @event error Invoked when an error is encountered.
+ * @event close Invoked when the TCP connection is closed.
+ * @event drain Invoked when all data has been read from the socket.
+ * @event (message-type) Invoked for specific message schema type, such as `scenediffevent`
  */
-const { schemas, schemaMap } = require('./schemas')
-
-/**
- * Decodes a buffer containg a Mycelium event.
- * @param {Buffer} data The raw Mycelium event buffer.
- */
-const decode = (data) => {
-
-  if (!data || data.length < 3) {
-    console.error('Invalid message data');
-    return null;
+class Mycelium {
+  constructor() {
+    this._listeners = {};
+    this._buffers = [];
+    this._client = new net.Socket();
+    this._client.on('data', (data) => {
+      this._ingestData(data);
+    });
+    this._client.on('error', (err) => this._emit('error', err));
+    this._client.on('drain', () => this._emit('drain'));
+    this._client.on('close', (isErr) => this._emit('close', isErr));
   }
 
-  const len = data.readUInt16BE();
-  const id = data.readUInt16BE(2);
-  data = data.slice(4);
-  
-  const event = schemaMap.idToEvent[id];
-  const schema = schemas[event];
+  /**
+   * Opens a TCP connection with the multiplayer server.
+   * @param {string} ip 
+   * @param {string} port 
+   */
+  connect(ip=MYCELIUM_IP, port=MYCELIUM_PORT) {
+    this._client.connect(ip, port, () => {
+      this._emit('connect');
+    })
+    return this;
+  }
 
-  console.log(`received ${event} event`);
-  
-  const decoded = decodePayload(schema, data, schema.definitions || []);
+  /**
+   * Closes the connection to the multiplayer server.
+   */
+  close()  {
+    this._client.close();
+    return this;
+  }
 
-  return {
-    id,
-    event,
-    payload: decoded.payload,
+  /**
+   * Log in to the multiplayer server with a token provided by the authoring api. Note
+   * that this is a different token than is used to communicate _with_ the authoring API.
+   * @param {string} jwt 
+   */
+  login(jwt) {
+    // TODO: remove! this is temporary
+    const LOGIN_MSG = 17797;
+    const ALLOC = 1;
+    const LOGIN_ARR = [
+      Buffer.from(new Uint8Array([LOGIN_MSG >> 8, LOGIN_MSG, ALLOC, jwt.length >> 8, jwt.length])),
+      Buffer.from(jwt, 'ascii')
+    ];
+    const data = Buffer.concat(LOGIN_ARR);
+    const len = data.length;
+    const lenArr = new Uint8Array([len >> 8, len]);
+    const output = Buffer.concat([Buffer.from(lenArr), data]);
+    this._client.write(output);
+    return this;
+  }
+
+  /**
+   * Send a message to the multiplayer server.
+   * @param {object} msg 
+   * @param {number} msg.id
+   * @param {string} msg.type
+   * @param {object} msg.payload
+   */
+  sendMessage(msg) {
+    // validate
+    if (!validate(msg)) {
+      this._emit('error', new Error('Invalid message'));
+      return this;
+    }
+
+    // encode
+    let encoded;
+    try {
+      encoded = encode(msg);
+    } catch (err) {
+      this._emit('error', err);
+      return this;
+    }
+
+    if (!encoded) {
+      this._emit('error', new Error('Unable to encode message'))
+      return this;
+    }
+    
+    try {
+      this._client.write(encoded);
+    } catch (err) {
+      this._emit('error', err);
+    }
+
+    return this;
+  }
+
+  /**
+   * Register a function for an event.
+   * @param {string} event 
+   * @param {function} handler 
+   */
+  on(event, handler) {
+    const upper = event.toUpperCase();
+    if (EVENTS.indexOf(upper) < 0 || !handler) {
+      return;
+    }
+
+    if (!this._listeners[upper]) {
+      this._listeners[upper] = [];
+    }
+
+    this._listeners[upper].push(handler);
+    return this;
+  }
+
+  /**
+   * Remove a registration for an event
+   * @param {string} event 
+   * @param {function} handler 
+   */
+  off(event, handler) {
+    const handlers = this._listeners[event.toUpperCase()] || [];
+    for (const i in handlers) {
+      if (handlers[i] === handler) {
+        handlers.splice(i, 1);
+        break;
+      }
+    }
+    return this;
+  }
+
+  /**
+   * Queue up data for processing
+   * @param {Buffer} buffer 
+   */
+  _ingestData(buffer) {
+    this._buffers.push(buffer);
+    
+    try {
+      this._processBuffers();
+    } catch (err) {
+      this._emit('error', err);
+    }
+  }
+
+  /**
+   * Inspect buffers and decode any messages
+   */
+  _processBuffers() {
+    // check if we have a full message
+    const len = this._buffers[0].readUInt16BE() + 2;
+    const available = this._buffers.map((b) => b.length).reduce((a,b) => a + b);
+
+    // if not, wait
+    if (available < len) {
+      return;
+    }
+
+    // get the data for the current message
+    let data = Buffer.concat(this._buffers, len);
+    let used = 0;
+
+    // make sure we keep the remaining data
+    while(used < data.length && this._buffers.length) {
+      const left = len - used;
+      if (this._buffers[0].length <= left) {
+        const shifted = this._buffers.shift();
+        used += shifted.length;
+      } else {
+        this._buffers[0] = this._buffers[0].slice(left);
+        used += left;
+      }
+    }
+
+    let decoded = decode(data);
+
+    if (!decoded) {
+      this._emit('error', new Error('Failed to decode message'));
+      return;
+    }
+
+    this._emit('message', decoded);
+    this._emit(decoded.event.toUpperCase(), decoded);
+
+    // there may be another message queued up
+    if (this._buffers.length) {
+      this._processBuffers()
+    }
+  }
+
+  /**
+   * Fire off an event
+   * @param {string} event 
+   * @param  {...any} args 
+   */
+  _emit(event, ...args) {
+    const handlers = this._listeners[event.toUpperCase()] || [];
+    for (const handler of handlers) {
+      handler(...args);
+    }
   }
 };
 
-/**
- * Decodes the next object in a Mycelium event.
- * @param {object} schema The JSON schema for the message type.
- * @param {Buffer} data The Mycelium message buffer.
- * @param {Array<object>} definitions The definitions from the root of the schema.
- */
-const decodePayload = (schema, data, definitions) => {
-  const additionalProperties = schema.additionalProperties;
-  const properties = getAllProperties(schema, definitions) || {};
-
-  let decoded = { data, payload: null };
-  let type = schema.type || '';
-
-  if (additionalProperties) {
-    type = 'map';
-  }
-
-  const format = schema.format || '';
-  const items = schema.items || {};
-
-  if (Array.isArray(type)) {
-    for (const t of type) {
-      if (t !== "null" && t !== "undefined") {
-        type = t;
-        break;
-      } 
-    }
-  }
-
-  if (!type) {
-    return decoded;
-  }
-
-  switch (type) {
-    case "integer": {
-      let val = 0;
-      if (format == 'int32') {
-        decoded.payload = decoded.data.readInt32BE();
-        decoded.data = decoded.data.slice(4);
-      } else {
-        decoded.payload = decoded.data.readUInt16BE();
-        decoded.data = decoded.data.slice(2);
-      }
-      return decoded;
-    }
-    case "number": {
-      decoded.payload = decoded.data.readFloatBE();
-      decoded.data = decoded.data.slice(4);
-      return decoded;
-    }
-    case "boolean": {
-      decoded.payload = decoded.data.readUInt8();
-      decoded.data = decoded.data.slice(1);
-      return decoded;
-    }
-    case "string": {
-      const len = data.readUInt16BE();
-      const end = len + 2;
-      decoded.payload = decoded.data.toString('ascii', 2, end);
-      decoded.data = decoded.data.slice(end);
-      return decoded;
-    }
-    case "array":
-      const arrRef = items['$ref'] || '';
-      const refType = typeFromRef(arrRef);
-      const definition = definitions[refType];
-      decoded.payload = [];
-      
-      // console.log(definition);
-      const len = decoded.data.readUInt16BE();
-      decoded.data = decoded.data.slice(2);
-
-      for (let i = 0; i < len; i++) {
-        const item = decodePayload(definition, decoded.data, definitions);
-        decoded.data = item.data;
-        decoded.payload.push(item.payload);
-      }
-
-      return decoded;
-    case "object": {
-      const keys = Object.keys(properties).sort();
-      decoded.payload = {};
-
-      const alloc = decoded.data.readUInt8();
-      decoded.data = decoded.data.slice(1);
-
-      if (!alloc) {
-        return decoded;
-      }
-
-      for (const key of keys) {
-        // console.log(`processing ${key}`);
-        const property = properties[key] || {};
-        const oneOf = property.oneOf;
-        let item = {};
-        if (oneOf && oneOf[oneOf.length-1]) {
-          const ref = oneOf[oneOf.length-1]['$ref'] || '';
-          const refType = typeFromRef(ref);
-          const definition = definitions[refType];
-          item = decodePayload(definition, decoded.data, definitions);
-        } else {
-          item = decodePayload(property, decoded.data, definitions);
-        }
-        decoded.data = item.data;
-        decoded.payload[key] = item.payload;
-      }
-
-      return decoded;
-    }
-    case 'map': {
-      const len = decoded.data.readUInt16BE();
-      decoded.data = decoded.data.slice(2);
-      decoded.payload = {};
-      
-      const mapProps = getAllProperties(additionalProperties, definitions);
-
-      for (let i = 0; i < len; i++) {
-        // first get key
-        const keyItem = decodePayload({ type:'string' }, decoded.data, definitions);
-        const key = keyItem.payload;
-        decoded.data = keyItem.data;
-
-        // and then the value
-        const valItem = decodePayload(mapProps, decoded.data, definitions);
-        decoded.data = valItem.data;
-        decoded.payload[key] = valItem.payload;
-      }
-
-      return decoded;
-    }
-  }
-  return decoded;
-}
-
-/**
- * Parses a $ref entry in a schema.
- * @param {string} str 
- */
-const typeFromRef = (str) => { 
-  const refSplit = str.split('/');
-  return refSplit[refSplit.length-1];
-}
-
-/**
- * Recursively searchs a schema for inherited properties.
- * @param {object} schema 
- * @param {object[]} definitions 
- */
-const getAllProperties = (schema, definitions) => {
-  const allOf = schema.allOf || [];
-  let properties = schema.properties || {};
-
-  for (const oneOf of allOf) {
-    if (oneOf['$ref']) {
-      const refType = typeFromRef(oneOf['$ref']);
-      const definition = definitions[refType];
-      properties = {
-        ...properties,
-        ...getAllProperties(definition, definitions)
-      };
-    }
-
-    if (oneOf.properties) {
-      properties = {
-        ...properties,
-        ...oneOf.properties
-      };
-    }
-  }
-
-  // console.log(properties);
-  return properties;
-}
-
 module.exports = {
-  decode
+  MYCELIUM_IP,
+  MYCELIUM_PORT,
+  Mycelium
 };
