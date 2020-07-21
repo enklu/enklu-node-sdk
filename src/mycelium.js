@@ -44,7 +44,7 @@ class Mycelium {
    * Closes the connection to the multiplayer server.
    */
   close()  {
-    this._client.close();
+    this._client.destroy();
     return this;
   }
 
