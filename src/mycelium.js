@@ -1,5 +1,6 @@
 const { decode } = require('./decoder');
 const { validate, encode } = require('./encoder');
+const { schemaMap } = require('./schemas');
 const net = require('net');
 
 const MYCELIUM_IP = process.env.MYCELIUM_IP || 'cloud.enklu.com';
@@ -44,7 +45,7 @@ class Mycelium {
    * Closes the connection to the multiplayer server.
    */
   close()  {
-    this._client.close();
+    this._client.destroy();
     return this;
   }
 
@@ -54,19 +55,15 @@ class Mycelium {
    * @param {string} jwt 
    */
   login(jwt) {
-    // TODO: remove! this is temporary
-    const LOGIN_MSG = 17797;
-    const ALLOC = 1;
-    const LOGIN_ARR = [
-      Buffer.from(new Uint8Array([LOGIN_MSG >> 8, LOGIN_MSG, ALLOC, jwt.length >> 8, jwt.length])),
-      Buffer.from(jwt, 'ascii')
-    ];
-    const data = Buffer.concat(LOGIN_ARR);
-    const len = data.length;
-    const lenArr = new Uint8Array([len >> 8, len]);
-    const output = Buffer.concat([Buffer.from(lenArr), data]);
-    this._client.write(output);
-    return this;
+    const event = 'LoginRequest'
+    const msg = {
+      id: schemaMap.eventToId[event],
+      event,
+      payload: {
+        jwt: jwt
+      }
+    };
+    return this.sendMessage(msg);
   }
 
   /**
