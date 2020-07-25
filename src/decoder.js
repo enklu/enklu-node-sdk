@@ -1,4 +1,9 @@
 const { schemas, schemaMap } = require('./schemas');
+const { 
+  typeFromRef,
+  getAllProperties,
+  getSchemaType 
+} = require('./schemaUtils');
 
 /**
  * Decodes a buffer containg a Mycelium event.
@@ -33,27 +38,10 @@ const decode = (data) => {
  * @param {Array<object>} definitions The definitions from the root of the schema.
  */
 const decodePayload = (schema, data, definitions) => {
-  const additionalProperties = schema.additionalProperties;
   const properties = getAllProperties(schema, definitions) || {};
 
   let decoded = { data, payload: null };
-  let type = schema.type || 'object';
-
-  if (additionalProperties) {
-    type = 'map';
-  }
-
-  const format = schema.format || '';
-  const items = schema.items || {};
-
-  if (Array.isArray(type)) {
-    for (const t of type) {
-      if (t !== "null" && t !== "undefined") {
-        type = t;
-        break;
-      } 
-    }
-  }
+  const type = getSchemaType(schema);
 
   if (!type) {
     return decoded;
@@ -61,12 +49,11 @@ const decodePayload = (schema, data, definitions) => {
 
   switch (type) {
     case "integer": {
-      let val = 0;
-      if (format == 'int32') {
+      if (schema.format === 'int32') {
         decoded.payload = decoded.data.readInt32BE();
         decoded.data = decoded.data.slice(4);
       } else {
-        decoded.payload = decoded.data.readUInt16BE();
+        decoded.payload = decoded.data.readInt16BE();
         decoded.data = decoded.data.slice(2);
       }
       return decoded;
@@ -89,12 +76,12 @@ const decodePayload = (schema, data, definitions) => {
       return decoded;
     }
     case "array":
+      const items = schema.items || {};
       const arrRef = items['$ref'] || '';
       const refType = typeFromRef(arrRef);
       const definition = definitions[refType];
       decoded.payload = [];
       
-      // console.log(definition);
       const len = decoded.data.readUInt16BE();
       decoded.data = decoded.data.slice(2);
 
@@ -117,7 +104,6 @@ const decodePayload = (schema, data, definitions) => {
       }
 
       for (const key of keys) {
-        // console.log(`processing ${key}`);
         const property = properties[key] || {};
         const oneOf = property.oneOf;
         let item = {};
@@ -140,6 +126,7 @@ const decodePayload = (schema, data, definitions) => {
       decoded.data = decoded.data.slice(2);
       decoded.payload = {};
       
+      const additionalProperties = schema.additionalProperties;
       const mapProps = getAllProperties(additionalProperties, definitions);
 
       for (let i = 0; i < len; i++) {
@@ -158,45 +145,6 @@ const decodePayload = (schema, data, definitions) => {
     }
   }
   return decoded;
-}
-
-/**
- * Parses a $ref entry in a schema.
- * @param {string} str 
- */
-const typeFromRef = (str) => { 
-  const refSplit = str.split('/');
-  return refSplit[refSplit.length-1];
-}
-
-/**
- * Recursively searchs a schema for inherited properties.
- * @param {object} schema 
- * @param {object[]} definitions 
- */
-const getAllProperties = (schema, definitions) => {
-  const allOf = schema.allOf || [];
-  let properties = schema.properties || {};
-
-  for (const oneOf of allOf) {
-    if (oneOf['$ref']) {
-      const refType = typeFromRef(oneOf['$ref']);
-      const definition = definitions[refType];
-      properties = {
-        ...properties,
-        ...getAllProperties(definition, definitions)
-      };
-    }
-
-    if (oneOf.properties) {
-      properties = {
-        ...properties,
-        ...oneOf.properties
-      };
-    }
-  }
-
-  return properties;
 }
 
 module.exports = {
