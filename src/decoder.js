@@ -52,6 +52,9 @@ const decodePayload = (schema, data, definitions) => {
       if (schema.format === 'int32') {
         decoded.payload = decoded.data.readInt32BE();
         decoded.data = decoded.data.slice(4);
+      } else if (schema.format === 'byte') {
+        decoded.payload = decoded.data.readUInt8();
+        decoded.data = decoded.data.slice(1);
       } else {
         decoded.payload = decoded.data.readInt16BE();
         decoded.data = decoded.data.slice(2);
