@@ -10,7 +10,7 @@ const ALLOC_SIZE = 4096;
 /**
  * Validates a Mycelium against a JSON schema.
  * @param {object} msg The message object.
- * @param {number} msg.id The multiplayer message id. If not present, `msg.type` is required.
+ * @param {number} msg.id The multiplayer message id. If not present, `msg.event` is required.
  * @param {string} msg.event The multiplayer message name. If not present, `msg.id` is required.
  * @param {object} msg.payload The message body.
  */
@@ -35,7 +35,7 @@ const validate = (msg) => {
  * Recursively converts a myclium message object to a binary format
  * @param {object} msg The message object.
  * @param {number} msg.id The multiplayer message id. If not present, `msg.type` is required.
- * @param {string} msg.type The multiplayer message name. If not present, `msg.id` is required.
+ * @param {string} msg.event The multiplayer message name. If not present, `msg.id` is required.
  * @param {object} msg.payload The message body.
  */
 const encode = (msg) => {
@@ -105,6 +105,10 @@ const encodeFields = (payload, schema, definitions, { buffers, offset }) => {
         let buffer = getBufferWithRoom(buffers, offset, 4);
         buffer.buffer.writeInt32BE(payload, offset);
         offset = buffer.offset + 4;
+      } else if (schema.format === 'byte') {
+        let buffer = getBufferWithRoom(buffers, offset, 1);
+        buffer.buffer.writeUInt8(payload, offset);
+        offset = buffer.offset + 1;
       } else {
         buffer = getBufferWithRoom(buffers, offset, 4);
         buffer.buffer.writeInt16BE(payload, offset);
