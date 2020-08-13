@@ -15,16 +15,9 @@ let isLoggedIn = false;
 
 const prompt = () => {
   rl.question('press enter to broadcast a notification.', (txt) => {
-    mycelium.sendMessage({
-      event: 'NotificationEvent',
-      payload: {
-        type: 'broadcast',
-        memberId: '',
-        payload: txt
-      }
-    });
+    mycelium.broadcast('broadcast', txt);
     prompt();
-  })
+  });
 };
 
 mycelium.on('message', (msg) => {
