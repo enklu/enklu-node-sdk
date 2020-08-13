@@ -56,8 +56,10 @@ class Mycelium {
    */
   login(jwt) {
     const event = 'LoginRequest'
+    const id = schemaMap.eventToId[event];
+
     const msg = {
-      id: schemaMap.eventToId[event],
+      id,
       event,
       payload: {
         jwt: jwt
@@ -67,10 +69,94 @@ class Mycelium {
   }
 
   /**
+   * Sends a notification to a member or all members of the room.
+   * @param {string} type Internal id of message type, defined by the user.
+   * @param {any} [payload] The data to send. If it is an object, will be encoded as a string.
+   * @param {string} [memberId] An optional id of a specific recipient. If not included, all members besides the sender will receive the message.
+   */
+  broadcast(type, payload='', memberId='') {
+    const event = 'NotificationEvent';
+
+    if (!type) {
+      this._emitSendError(event, '"type" parameter is required.');
+      return;
+    }
+
+    if (typeof payload !== 'string') {
+      payload = JSON.stringify(payload);
+    } 
+    
+    const id = schemaMap.eventToId[event];
+    const msg = {
+      event,
+      id,
+      payload: {
+        type,
+        memberId,
+        payload
+      }
+    };
+    this.sendMessage(msg);
+  }
+
+  /**
+   * Send a heartbeat to the server to keep the room alive.
+   * @param {number} [pingId] An optional ping id. If not provided, one is generated.
+   */
+  ping(pingId=0) {
+    const event = 'PingRequest';
+    const id = schemaMap.eventToId[event];
+    const max = 255;
+    
+    if (!pingId) {
+      // generate a random UInt8 1-255
+      pingId = Math.ceil(Math.random() * max);
+    } else {
+      // ensure it'll fit in a byte.
+      pingId = Math.min(pingId, max);
+    }
+
+    const msg = {
+      event,
+      id,
+      payload: {
+        pingId
+      }
+    };
+    this.sendMessage(msg);
+  }
+
+  /**
+   * Repond to a ping request. This is most commonly used to respond 
+   * immedately to a PingRequest event from the server.
+   * @param {number} pingId The id of a previous PingEvent.
+   */
+  pingBack(pingId) {
+    const event = 'PingRequest';
+
+    if (!pingId) {
+      this._emitSendError(event, '"pingId" parameter is required.');
+      return;
+    }
+
+    const id = schemaMap.eventToId[event];
+    pingId = Math.min(pingId, 255);
+
+    const msg = {
+      event,
+      id,
+      payload: {
+        pingId
+      }
+    };
+    this.sendMessage(msg);
+  }
+
+  /**
    * Send a message to the multiplayer server.
    * @param {object} msg 
    * @param {number} msg.id
-   * @param {string} msg.type
+   * @param {string} msg.event
    * @param {object} msg.payload
    */
   sendMessage(msg) {
@@ -136,6 +222,16 @@ class Mycelium {
       }
     }
     return this;
+  }
+
+  /**
+   * Emits an error message to the client.
+   * @param {string} event The event type the error pertains to.
+   * @param {string} message An informative message.
+   */
+  _emitSendError(event, message) {
+    const err = `Error sending ${event}: ${message}`;
+    this._emit('error', new Error(err));
   }
 
   /**
