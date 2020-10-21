@@ -35,7 +35,7 @@ class Mycelium {
    * @param {string} port 
    */
   connect(ip=MYCELIUM_IP, port=MYCELIUM_PORT) {
-    this._client.connect(ip, port, () => {
+    this._client.connect(port, ip, () => {
       this._emit('connect');
     })
     return this;

@@ -1,6 +1,6 @@
 {
-  "name": "enklu-node-sdk",
-  "version": "1.0.0",
+  "name": "@enklu/node-sdk",
+  "version": "2020.10.0",
   "description": "Resources for interacting with the Enklu Cloud Web APIs",
   "main": "index.js",
   "scripts": {
@@ -13,5 +13,13 @@
   "devDependencies": {
     "dotenv": "^8.2.0",
     "nodemon": "^2.0.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enklu/enklu-node-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/enklu/enklu-node-sdk/issues"
+  },
+  "homepage": "https://github.com/enklu/enklu-node-sdk#readme"
 }

@@ -4,7 +4,9 @@ Every experience developed on [Enklu Cloud](cloud.enklu.com) is backed by a powe
 
 ## Installing
 
-For now, just clone this repository and add it to your project. It will be distributed as a NPM module soon.
+```
+npm install @enklu/node-sdk
+```
 
 ## Getting Started
 
@@ -28,7 +30,7 @@ curl -X POST 'https://cloud.enklu.com:10001/v1/app/${your-app-id}/token' \
 A successful respnse will contain a Json Web Token that can be used in the SDK. Now you can start sending messages.
 
 ```javascript
-const {Mycelium} = require('enklu-node-sdk');
+const {Mycelium} = require('@enklu/node-sdk');
 
 const JWT = process.env.JWT;
 const mycelium = new Mycelium();
