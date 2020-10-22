@@ -1,6 +1,6 @@
 {
   "name": "@enklu/node-sdk",
-  "version": "2020.10.1",
+  "version": "2020.10.2",
   "description": "Resources for interacting with the Enklu Cloud Web APIs",
   "main": "index.js",
   "scripts": {
