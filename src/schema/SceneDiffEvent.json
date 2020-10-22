@@ -249,17 +249,6 @@
         "z": {
           "type": "number",
           "format": "float"
-        },
-        "magnitude": {
-          "type": "number",
-          "format": "float"
-        },
-        "magnitudeSqr": {
-          "type": "number",
-          "format": "float"
-        },
-        "normalized": {
-          "$ref": "#/definitions/Vec3"
         }
       }
     },
