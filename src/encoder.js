@@ -197,7 +197,15 @@ const encodeFields = (payload, schema, definitions, { buffers, offset }) => {
       offset = buffer.offset + 2;
 
       const additionalProperties = schema.additionalProperties;
-      const mapProps = getAllProperties(additionalProperties, definitions);
+      let mapSchema = {
+        type: getSchemaType(additionalProperties),
+        properties: {}
+      }
+
+      if (mapSchema.type === 'object') {
+        mapSchema.allOf = [ additionalProperties ];
+        mapSchema.properties = getAllProperties(mapSchema, definitions)
+      }
 
       for (const key of keys) {
         // first encode the key
@@ -207,7 +215,7 @@ const encodeFields = (payload, schema, definitions, { buffers, offset }) => {
 
         // then the value
         const val = payload[key];
-        const res = encodeFields(val, mapProps, definitions, { buffers, offset });
+        const res = encodeFields(val, mapSchema, definitions, { buffers, offset });
 
         offset = res.offset;
         buffers = res.buffers;
