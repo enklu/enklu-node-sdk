@@ -130,7 +130,15 @@ const decodePayload = (schema, data, definitions) => {
       decoded.payload = {};
       
       const additionalProperties = schema.additionalProperties;
-      const mapProps = getAllProperties(additionalProperties, definitions);
+      let mapSchema = {
+        type: getSchemaType(additionalProperties),
+        properties: {}
+      }
+
+      if (mapSchema.type === 'object') {
+        mapSchema.allOf = [ additionalProperties ];
+        mapSchema.properties = getAllProperties(mapSchema, definitions)
+      }
 
       for (let i = 0; i < len; i++) {
         // first get key
@@ -139,7 +147,7 @@ const decodePayload = (schema, data, definitions) => {
         decoded.data = keyItem.data;
 
         // and then the value
-        const valItem = decodePayload(mapProps, decoded.data, definitions);
+        const valItem = decodePayload(mapSchema, decoded.data, definitions);
         decoded.data = valItem.data;
         decoded.payload[key] = valItem.payload;
       }

@@ -41,4 +41,4 @@ mycelium.on('connect', () => {
   mycelium.login(JWT);
 });
 
-mycelium.connect(MYCELIUM_PORT, MYCELIUM_IP);
+mycelium.connect(MYCELIUM_IP, MYCELIUM_PORT);
