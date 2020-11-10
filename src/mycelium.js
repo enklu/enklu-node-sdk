@@ -6,6 +6,7 @@ const net = require('net');
 const MYCELIUM_IP = process.env.MYCELIUM_IP || 'cloud.enklu.com';
 const MYCELIUM_PORT = process.env.MYCELIUM_PORT || '10103';
 const EVENTS = ['MESSAGE', 'CONNECT', 'ERROR', 'CLOSE', 'DRAIN'];
+const KEEPALIVE_FREQUENCY = 10000;
 
 /**
  * Facilitates encoding and decoding of events from a Mycelium multiplayer server.
@@ -26,7 +27,11 @@ class Mycelium {
     });
     this._client.on('error', (err) => this._emit('error', err));
     this._client.on('drain', () => this._emit('drain'));
-    this._client.on('close', (isErr) => this._emit('close', isErr));
+    this._client.on('close', (isErr) => {
+      clearInterval(this._keepAliveIntervalId);
+      this._emit('close', isErr)
+    });
+    this._keepAliveIntervalId = 0;
   }
 
   /**
@@ -36,6 +41,7 @@ class Mycelium {
    */
   connect(ip=MYCELIUM_IP, port=MYCELIUM_PORT) {
     this._client.connect(port, ip, () => {
+      this._keepAliveIntervalId = setInterval(this.ping.bind(this), KEEPALIVE_FREQUENCY);
       this._emit('connect');
     })
     return this;
